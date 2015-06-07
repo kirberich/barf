@@ -9,6 +9,7 @@ const int LED_ACTIVITY = 0;
 const int LED_CONNECTION = 1;
 const int LED_OFF = 2;
 const int LED_ON = 3;
+const int LED_GPIO = 4;
 
 const String COMMAND_DEBUG = "debug";
 const String COMMAND_METHOD = "method";
@@ -28,3 +29,5 @@ const String COMMAND_TIMEOUT = "timeout";
 const String COMMAND_LED_MODE = "led_mode";
 const String COMMAND_GET = "get";
 const String COMMAND_POST = "post";
+const String COMMAND_ALLOW_GPIO = "allow_gpio";
+const String COMMAND_DISALLOW_GPIO = "disallow_gpio";

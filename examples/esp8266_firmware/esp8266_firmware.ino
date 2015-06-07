@@ -4,6 +4,7 @@
  */
 #include <ESP8266WiFi.h>
 #include <barf_constants.h>
+#include <LinkedList.h>
 
 String ssid;
 String password;
@@ -11,8 +12,19 @@ WiFiServer server(80);
 unsigned int server_timeout = 1000;
 int led_mode = LED_ACTIVITY;
 unsigned long last_activity = 0;
+bool allow_gpio = true;
+
+typedef struct RequestVar {
+	String name;
+	String value;
+};
 
 void update_led() {
+	if (led_mode == LED_GPIO) {
+		// Leave the led alone if it's being used as a GPIO pin
+		return;
+	}
+
 	bool is_on = false;
 
 	if (led_mode == LED_ACTIVITY) {
@@ -24,7 +36,6 @@ void update_led() {
 	} else if (led_mode == LED_ON) {
 		is_on = true;
 	}
-
 	digitalWrite(2, is_on);
 }
 
@@ -114,7 +125,6 @@ void handle_request() {
 	// Get the request method and remove method bit from req string
 	String method = req.substring(0, req.indexOf(" "));
 	req = req.substring(req.indexOf(" ")+1);
-	send_data(COMMAND_METHOD, method);
 
 	// Get the resource path and transmit it in parts
 	String resource_path = req.substring(0, req.indexOf(" "));
@@ -133,21 +143,14 @@ void handle_request() {
 		path_without_args = path_without_args += "/";
 	}
 
-	// Get number of path segments
-	int num_slashes = 0;
-	for(int i=0; i<path_without_args.length(); i++) {
-		if(path_without_args[i] == '/') {
-			num_slashes++;
-		}
-	}
-	send_data(COMMAND_NUM_FRAMENTS, String(num_slashes-1));
-
 	// Get path segments
 	String chopped_path = path_without_args.substring(1);
+	LinkedList<String> fragments;
 	while(true) {
 		int next_slash = chopped_path.indexOf("/");
 		if (next_slash != -1) {
-			send_data(COMMAND_PATH_FRAGMENT, chopped_path.substring(0, next_slash));
+			String fragment = chopped_path.substring(0, next_slash);
+			fragments.add(fragment);
 			chopped_path = chopped_path.substring(next_slash+1);
 		} else {
 			break;
@@ -161,19 +164,20 @@ void handle_request() {
 
 	// Get GET variables
 	String chopped_query_string = query_string.substring(1);
+	LinkedList<RequestVar> get_vars;
 	while(true) {
 		int next_var = chopped_query_string.indexOf("&");
 		if (next_var != -1) {
 			String var = chopped_query_string.substring(0, next_var);
+			String value;
 			int equals_index = var.indexOf("=");
 			if (equals_index != -1) {
-				send_data(COMMAND_GET_VAR, var.substring(0, equals_index));
-				send_data(COMMAND_GET_VALUE, var.substring(equals_index+1));
+				var = var.substring(0, equals_index);
+				value = var.substring(equals_index+1);
 			} else {
-				// Just a variable, no value
-				send_data(COMMAND_GET_VAR, var);
-				send_data(COMMAND_GET_VALUE, "");
+				value = "";
 			}
+			get_vars.add({var, value});
 
 			chopped_query_string = chopped_path.substring(next_var+1);
 		} else {
@@ -183,20 +187,61 @@ void handle_request() {
 
 	client.flush();
 
-	// All data's been sent (we're ignoring the request body for now), now send a command to get any response data
-	String response_data = request_response();
+	String response_data;
 	int status_code = 200;
 	String status_reason = "OK";
 
-	if (response_data.substring(0, 7) == "status:") {
-		status_code = response_data.substring(7, response_data.indexOf(" ")).toInt();
-		response_data = response_data.substring(7);
-	} else if (!response_data.length()) {
-		status_code = 404;
+	if (fragments.get(0) == "gpio" && allow_gpio) {
+		// Handle GPIO request
+		int pin_number = fragments.get(1).toInt();
+		if (method == "GET" && fragments.size() != 2) {
+			status_code = 400;
+			response_data = "GET requests need to be in the form /gpio/<pin>";
+		} else if (method == "POST" && fragments.size() != 3) {
+			status_code = 400;
+			response_data = "POST requests need to be in the form /gpio/<pin>/<value>";
+		}
+
+		if (method == "GET") {
+			response_data = String(digitalRead(pin_number));
+		} else if (fragments.get(2) == "input") {
+			pinMode(pin_number, INPUT);
+			response_data = String("Configured pin ") + fragments.get(1) + String(" as INPUT");
+		} else if (fragments.get(2) == "output") {
+			pinMode(pin_number, OUTPUT);
+			response_data = String("Configured pin ") + fragments.get(1) + String(" as OUTPUT");
+		} else {
+			analogWrite(pin_number, fragments.get(2).toInt());
+			response_data = String("Set pin ") + fragments.get(1) + String(" to ") + fragments.get(2);
+		}
+	} else {
+		// Send data over serial
+		send_data(COMMAND_METHOD, method);
+		send_data(COMMAND_NUM_FRAMENTS, String(fragments.size()));
+		for(int i=0; i<fragments.size(); ++i) {
+			send_data(COMMAND_PATH_FRAGMENT, fragments.get(i));
+		}
+		for(int i=0; i < get_vars.size(); ++i) {
+			RequestVar var = get_vars.get(i);
+			send_data(COMMAND_GET_VAR, var.name);
+			send_data(COMMAND_GET_VALUE, var.value);
+		}
+
+		// All data's been sent (we're ignoring the request body for now), now send a command to get any response data
+		response_data = request_response();
+
+		if (response_data.substring(0, 7) == "status:") {
+			status_code = response_data.substring(7, response_data.indexOf(" ")).toInt();
+			response_data = response_data.substring(7);
+		} else if (!response_data.length()) {
+			status_code = 404;
+		}
 	}
 
 	// It'd be better if the client just supplied the reason, but I can't be bothered now.
-	if (status_code == 404) {
+	if (status_code == 400) {
+		status_reason = "Bad Request";
+	} else if (status_code == 404) {
 		status_reason = "Not Found";
 	} else if (status_code == 401) {
 		status_reason = "Unauthorized";
@@ -254,6 +299,8 @@ void handle_serial() {
 		} else if (command == COMMAND_LED_MODE) {
 			// led_mode <mode>
 			led_mode = args.toInt();
+		} else if (command == COMMAND_ALLOW_GPIO || command == COMMAND_DISALLOW_GPIO) {
+			allow_gpio = command == COMMAND_ALLOW_GPIO;
 		} else if (command == COMMAND_GET || command == COMMAND_POST) {
 			// get <address>:<port>/<path> or get <address/<path>
 			String method = command == COMMAND_POST ? "POST" : "GET";

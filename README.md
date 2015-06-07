@@ -23,13 +23,21 @@ Allows bi-directional wifi communication over serial with an ESP8266 board. It's
  * Allows setting of response status codes, only a couple (200, 401, 403, 404, 418 and 500) provide proper text status codes though.
  * Return a 404 if no response is supplied over serial
  * POST or GET to remote http server and return response over serial
+ * Control/query GPIO pins (see below)
 
 ## Missing features
 There is a whole boatload of missing features, but these are the ones I'll probably add next
 
  * Automatic wifi reconnect
  * Runtime modification of serial baud-rate (it's set to 9600 currently), or at least a more sensible default
- * Built-in url scheme for controlling the 2 GPIO ports on the ESP8266
+
+## GPIO control
+You can control and query the GPIO pins directly through the /gpio urls. This is enabled by default, but you can disable it by sending `disallow_gpio`.
+
+ * `GET /gpio/<pin>` - Query the digital value of gpio <pin> (0 or 2 unless you broke some additional ones out)
+ * `POST /gpio/<pin>/input` - Configure <pin> as input
+ * `POST /gpio/<pin>/output` - Configure <pin> as output
+ * `POST /gpio/<pin>/value` - Set pwm on <pin> to <value>. Value can be between 0 (off) and 1024 (on).
 
 ## Commands
  * `ssid <ssid>` - configure wifi ssid
@@ -40,6 +48,8 @@ There is a whole boatload of missing features, but these are the ones I'll proba
  * `timeout` - Configure server timeout, after which clients connecting to the server are disconnected
  * `get <host>[:<port>][/path/to/resource]` - Make an HTTP get request. Contents are returned over serial
  * `post <host>[:<port>][/path/to/resource`] - Same as get, but using POST.
+ * `disallow_gpio` - Disable direct gpio control
+ * `allow_gpio` - Enable direct gpio control (default)
 
 ## Response formats
 Example output for a client requesting a resource at /test/1?what=up:

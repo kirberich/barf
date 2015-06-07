@@ -25,12 +25,6 @@ Allows bi-directional wifi communication over serial with an ESP8266 board. It's
  * POST or GET to remote http server and return response over serial
  * Control/query GPIO pins (see below)
 
-## Missing features
-There is a whole boatload of missing features, but these are the ones I'll probably add next
-
- * Automatic wifi reconnect
- * Runtime modification of serial baud-rate (it's set to 9600 currently), or at least a more sensible default
-
 ## GPIO control
 You can control and query the GPIO pins directly through the /gpio urls. This is enabled by default, but you can disable it by sending `disallow_gpio`.
 
@@ -50,6 +44,7 @@ You can control and query the GPIO pins directly through the /gpio urls. This is
  * `post <host>[:<port>][/path/to/resource`] - Same as get, but using POST.
  * `disallow_gpio` - Disable direct gpio control
  * `allow_gpio` - Enable direct gpio control (default)
+ * `baud_rate <rate>` - Set baudrate to <rate>.
 
 ## Response formats
 Example output for a client requesting a resource at /test/1?what=up:

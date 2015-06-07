@@ -13,6 +13,7 @@ unsigned int server_timeout = 1000;
 int led_mode = LED_ACTIVITY;
 unsigned long last_activity = 0;
 bool allow_gpio = true;
+int baud_rate = 9600;
 
 typedef struct RequestVar {
 	String name;
@@ -88,7 +89,7 @@ String request_response() {
 }
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(baud_rate);
 	delay(10);
 
 	// prepare GPIO2, for a status led
@@ -283,6 +284,7 @@ void handle_serial() {
 			send_data(String("password"), password);
 			send_data(String("connected"), String(WiFi.status() == WL_CONNECTED));
 			send_data(String("led_mode"), String(led_mode));
+			send_data(String("baud rate"), String(baud_rate));
 			Serial.print("ip ");
 			Serial.println(WiFi.localIP());
 		} else if (command == COMMAND_TIMEOUT) {
@@ -301,6 +303,10 @@ void handle_serial() {
 			led_mode = args.toInt();
 		} else if (command == COMMAND_ALLOW_GPIO || command == COMMAND_DISALLOW_GPIO) {
 			allow_gpio = command == COMMAND_ALLOW_GPIO;
+		} else if (command == COMMAND_BAUD_RATE)  {
+			// baud_rate <new_rate>
+			baud_rate = args.toInt();
+			Serial.begin(baud_rate);
 		} else if (command == COMMAND_GET || command == COMMAND_POST) {
 			// get <address>:<port>/<path> or get <address/<path>
 			String method = command == COMMAND_POST ? "POST" : "GET";

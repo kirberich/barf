@@ -20,6 +20,10 @@ typedef struct RequestVar {
 	String value;
 };
 
+String format_ip(IPAddress address) {
+	return String(address[0]) + "." + String(address[1]) + "." + String(address[2]) + "." + String(address[3]);
+}
+
 void update_led() {
 	if (led_mode == LED_GPIO) {
 		// Leave the led alone if it's being used as a GPIO pin
@@ -285,8 +289,7 @@ void handle_serial() {
 			send_data(String("connected"), String(WiFi.status() == WL_CONNECTED));
 			send_data(String("led_mode"), String(led_mode));
 			send_data(String("baud rate"), String(baud_rate));
-			Serial.print("ip ");
-			Serial.println(WiFi.localIP());
+			send_data(String("ip"), format_ip(WiFi.localIP()));
 		} else if (command == COMMAND_TIMEOUT) {
 			// timeout <ms>
 			server_timeout = args.toInt();

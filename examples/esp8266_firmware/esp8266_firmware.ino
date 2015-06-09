@@ -346,11 +346,10 @@ void handle_serial() {
 			}
 			WiFiClient client;
 			client.connect(address.c_str(), port);
-			client.print(method);
-			client.print(" ");
-			client.print(path);
-			client.println(" HTTP/1.0");
+			client.println(method + String(" ") + path + String(" HTTP/1.1"));
+			client.println(String("Host: ") + address + String(":") + String(port));
 			client.println();
+
 
 			// Get response
 			String response = client.readString();

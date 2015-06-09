@@ -35,7 +35,7 @@ void update_led() {
 	if (led_mode == LED_ACTIVITY) {
 		is_on = millis() - last_activity < 500;
 	} else if (led_mode == LED_CONNECTION) {
-		is_on = WiFi.status() == WL_CONNECTED;
+		is_on = is_connected();
 	} else if (led_mode == LED_OFF) {
 		is_on = false;
 	} else if (led_mode == LED_ON) {
@@ -62,7 +62,7 @@ void connect(unsigned int timeout) {
 
 	// If a timeout of 0 is used this might try forever, locking up the code.
 	unsigned long before = millis();
-	while (WiFi.status() != WL_CONNECTED) {
+	while (is_connected()) {
 		if (timeout && millis() - before > timeout) {
 			return;
 		}
@@ -103,6 +103,10 @@ void setup() {
 	// The chip remembers its last ssid and password, so generally just running the server will make it reachable,
 	// even without reconfiguring.
 	server.begin();
+}
+
+bool is_connected() {
+	return WiFi.status() == WL_CONNECTED;
 }
 
 void handle_request() {
@@ -286,7 +290,7 @@ void handle_serial() {
 		if (command == COMMAND_DEBUG){
 			send_data(String("ssid"), ssid);
 			send_data(String("password"), password);
-			send_data(String("connected"), String(WiFi.status() == WL_CONNECTED));
+			send_data(String("connected"), String(is_connected()));
 			send_data(String("led_mode"), String(led_mode));
 			send_data(String("baud rate"), String(baud_rate));
 			send_data(String("ip"), format_ip(WiFi.localIP()));
@@ -300,7 +304,7 @@ void handle_serial() {
 		} else if (command == COMMAND_CONNECT) {
 			connect();
 		} else if (command == COMMAND_IS_CONNECTED) {
-			send_data(COMMAND_IS_CONNECTED, String(WiFi.status() == WL_CONNECTED));
+			send_data(COMMAND_IS_CONNECTED, String(is_connected()));
 		} else if (command == COMMAND_DISCONNECT) {
 			disconnect();
 		} else if (command == COMMAND_GET_IP) {

@@ -299,6 +299,8 @@ void handle_serial() {
 			password = args;
 		} else if (command == COMMAND_CONNECT) {
 			connect();
+		} else if (command == COMMAND_IS_CONNECTED) {
+			send_data(COMMAND_IS_CONNECTED, String(WiFi.status() == WL_CONNECTED));
 		} else if (command == COMMAND_DISCONNECT) {
 			disconnect();
 		} else if (command == COMMAND_LED_MODE) {

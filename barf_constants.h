@@ -32,3 +32,4 @@ const String COMMAND_POST = "post";
 const String COMMAND_ALLOW_GPIO = "allow_gpio";
 const String COMMAND_DISALLOW_GPIO = "disallow_gpio";
 const String COMMAND_BAUD_RATE = "baud_rate";
+const String COMMAND_IS_CONNECTED = "is_connected";

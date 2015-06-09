@@ -98,8 +98,8 @@ public:
 template<typename T>
 LinkedList<T>::LinkedList()
 {
-	root=false;
-	last=false;
+	root=nullptr;
+	last=nullptr;
 	_size=0;
 
 	lastNodeGot = root;
@@ -112,13 +112,13 @@ template<typename T>
 LinkedList<T>::~LinkedList()
 {
 	ListNode<T>* tmp;
-	while(root!=false)
+	while(root!=nullptr)
 	{
 		tmp=root;
 		root=root->next;
 		delete tmp;
 	}
-	last = false;
+	last = nullptr;
 	_size=0;
 	isCached = false;
 }
@@ -155,7 +155,7 @@ ListNode<T>* LinkedList<T>::getNode(int index){
 		return current;
 	}
 
-	return false;
+	return nullptr;
 }
 
 template<typename T>
@@ -189,7 +189,7 @@ bool LinkedList<T>::add(T _t){
 
 	ListNode<T> *tmp = new ListNode<T>();
 	tmp->data = _t;
-	tmp->next = false;
+	tmp->next = nullptr;
 
 	if(root){
 		// Already have elements inserted
@@ -245,7 +245,7 @@ T LinkedList<T>::pop(){
 		ListNode<T> *tmp = getNode(_size - 2);
 		T ret = tmp->next->data;
 		delete(tmp->next);
-		tmp->next = false;
+		tmp->next = nullptr;
 		last = tmp;
 		_size--;
 		return ret;
@@ -253,8 +253,8 @@ T LinkedList<T>::pop(){
 		// Only one element left on the list
 		T ret = root->data;
 		delete(root);
-		root = false;
-		last = false;
+		root = nullptr;
+		last = nullptr;
 		_size = 0;
 		return ret;
 	}

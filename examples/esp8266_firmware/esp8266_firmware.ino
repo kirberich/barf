@@ -15,7 +15,7 @@ unsigned long last_activity = 0;
 bool allow_gpio = true;
 int baud_rate = 9600;
 
-typedef struct RequestVar {
+struct RequestVar {
 	String name;
 	String value;
 };

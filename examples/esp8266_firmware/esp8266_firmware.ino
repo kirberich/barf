@@ -320,6 +320,13 @@ void handle_serial() {
 			Serial.begin(baud_rate);
 		} else if (command == COMMAND_GET || command == COMMAND_POST) {
 			// get <address>:<port>/<path> or get <address/<path>
+
+			// Filter out protocol. Find first colon, check if it's got // after it, if yes, remove everything up to that point.
+			int colon_index = args.indexOf(':');
+			if (args.length() > colon_index + 3 && colon_index != -1 && args[colon_index + 1] == '/' && args[colon_index + 2] == '/') {
+				args = args.substring(colon_index + 3);
+			}
+
 			String method = command == COMMAND_POST ? "POST" : "GET";
 
 			int port_start = args.indexOf(":");

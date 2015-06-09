@@ -303,6 +303,8 @@ void handle_serial() {
 			send_data(COMMAND_IS_CONNECTED, String(WiFi.status() == WL_CONNECTED));
 		} else if (command == COMMAND_DISCONNECT) {
 			disconnect();
+		} else if (command == COMMAND_GET_IP) {
+			send_data(COMMAND_GET_IP, format_ip(WiFi.localIP()));
 		} else if (command == COMMAND_LED_MODE) {
 			// led_mode <mode>
 			led_mode = args.toInt();

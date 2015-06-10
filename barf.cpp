@@ -32,16 +32,15 @@ void Barf::disconnect() {
 	send_command(COMMAND_DISCONNECT);
 }
 
-// FIXME: Needs implementing and firmware changes
 bool Barf::is_connected() {
 	send_command(COMMAND_IS_CONNECTED);
 	String response = get_response_line(COMMAND_IS_CONNECTED);
 	return response == "1";
 }
 
-// FIXME: Needs implementing and firmware changes
 String Barf::get_ip() {
-	return "";
+	send_command(COMMAND_GET_IP);
+	return get_response_line(COMMAND_GET_IP);
 }
 
 void Barf::set_led_mode(int mode) {

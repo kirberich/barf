@@ -1,5 +1,4 @@
 // Constants used both by the firmware and the barf library
-
 #pragma once
 
 const bool METHOD_GET = 0;
@@ -10,6 +9,10 @@ const int LED_CONNECTION = 1;
 const int LED_OFF = 2;
 const int LED_ON = 3;
 const int LED_GPIO = 4;
+
+const String ERROR = "__err__";
+const String TIMEOUT = "__timeout__";
+const String UNEXPECTED_COMMAND = "__unexpected_command__";
 
 const String COMMAND_DEBUG = "debug";
 const String COMMAND_METHOD = "method";

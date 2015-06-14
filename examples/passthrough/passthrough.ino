@@ -6,11 +6,14 @@
 
 #include <barf.h>
 
-Barf barf(Serial1, String("Hagrid's older underpants"), String("o3jc7axp2"), 9600, true);
+#define CONSOLE_SERIAL Serial
+#define BARF_SERIAL Serial1
+
+Barf barf(BARF_SERIAL, "ssid", "password", 9600, true);
 
 void setup() {
-	Serial.begin(9600);
-	Serial1.begin(9600);
+	CONSOLE_SERIAL.begin(9600);
+	BARF_SERIAL.begin(9600);
 
 	pinMode(13, OUTPUT);
 	digitalWrite(13, HIGH);
@@ -19,19 +22,21 @@ void setup() {
 	barf.connect();
 
 	while(!barf.is_connected()) {
-		Serial.println("Waiting for wifi...");
+		CONSOLE_SERIAL.println("Waiting for wifi...");
 		delay(100);
 	}
+	CONSOLE_SERIAL.println("connected!");
+	CONSOLE_SERIAL.println(barf.get_ip() );
 }
 
 void loop() {
-	if (Serial1.available()) {
-		char inByte = Serial1.read();
-		Serial.print(inByte);
+	if (BARF_SERIAL.available()) {
+		char inByte = BARF_SERIAL.read();
+		CONSOLE_SERIAL.print(inByte);
 	}
 
-	if (Serial.available()) {
-		char inByte = Serial.read();
-		Serial1.print(inByte);
+	if (CONSOLE_SERIAL.available()) {
+		char inByte = CONSOLE_SERIAL.read();
+		BARF_SERIAL.print(inByte);
 	}
 }

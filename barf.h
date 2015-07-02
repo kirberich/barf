@@ -25,11 +25,6 @@ struct Request {
 	jsonic::containers::Vector<jString> fragments;
 	jsonic::containers::Vector<RequestVar> get_vars;
 
-	Request() {
-		fragments.reserve(100);
-		get_vars.reserve(100);
-	}
-
 	bool is_null() {
 		return method.length() == 0;
 	}

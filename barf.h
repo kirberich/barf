@@ -47,6 +47,7 @@ public:
 	jString debug_info();
 	void send_command(jString command, jString value);
 	void send_command(jString command);
+	void send_data(jString data);
 	void get_command_value(jString &command, jString &value);
 	jString get_ip();
 	jString read_line(jString expected_command, unsigned long timeout);

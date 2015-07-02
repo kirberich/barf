@@ -34,6 +34,11 @@ void Barf::send_command(jString command) {
 	ser.print("\n");
 }
 
+void Barf::send_data(jString data) {
+	ser.print(data.c_str());
+	ser.print("\n");
+}
+
 void Barf::init() {
 	// send_command(COMMAND_BAUD_RATE, baud_rate);
 	// ser.begin(baud_rate);

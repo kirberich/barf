@@ -47,5 +47,7 @@ void loop() {
 		for(int i=0; i<request.get_vars.size(); i++) {
 			CONSOLE_SERIAL.println(to_arduino_string(request.get_vars[i].name) + String(" = ") + to_arduino_string(request.get_vars[i].value));
 		}
+
+		barf.send_data("response!");
 	}
 }
